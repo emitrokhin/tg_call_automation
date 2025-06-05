@@ -14,6 +14,7 @@ api_hash = os.getenv("TG_API_HASH")
 chat_id = int(os.getenv("TG_CHAT_ID"))
 audio_url = os.getenv("TG_AUDIO_URL")
 session_name = os.getenv("TG_SESSION_NAME", "default_session")
+duration = os.getenv("TG_SESSION_DURATION")
 
 client = TelegramClient(session_name, api_id, api_hash)
 
@@ -47,7 +48,7 @@ async def main():
     print("Audio stream playback started.")
 
     # 5) Wait for 10 seconds to let WebRTC establish the stream
-    await asyncio.sleep(10)
+    await asyncio.sleep(duration)
 
     # 6) Discard group call for everyone
     try:
