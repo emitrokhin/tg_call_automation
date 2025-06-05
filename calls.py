@@ -63,38 +63,42 @@ async def try_play_with_retries(app, chat_id, stream, config, retries=10, delay=
     return False
 
 async def main():
-    # 1. Start Telethon client
-    await client.start()
-    print("Telethon client started.")
+    try:
+        # 1. Start Telethon client
+        await client.start()
+        print("Telethon client started.")
 
-    # 2. Get chat entity and input peer
-    entity = await client.get_entity(chat_id)
-    input_peer = await get_input_peer(entity)
+        # 2. Get chat entity and input peer
+        entity = await client.get_entity(chat_id)
+        input_peer = await get_input_peer(entity)
 
-    # 3. Initialize and start PyTgCalls
-    app = PyTgCalls(client)
-    await app.start()
-    print("PyTgCalls started.")
+        # 3. Initialize and start PyTgCalls
+        app = PyTgCalls(client)
+        await app.start()
+        print("PyTgCalls started.")
 
-    # 4. Start streaming audio to group call with retries
-    stream = MediaStream(audio_url, video_flags=MediaStream.Flags.IGNORE)
-    config = GroupCallConfig(join_as=input_peer, auto_start=True)
+        # 4. Start streaming audio to group call with retries
+        stream = MediaStream(audio_url, video_flags=MediaStream.Flags.IGNORE)
+        config = GroupCallConfig(join_as=input_peer, auto_start=True)
 
-    success = await try_play_with_retries(app, chat_id, stream, config)
+        success = await try_play_with_retries(app, chat_id, stream, config)
 
-    if not success:
-        await client.disconnect()
-        return
+        if not success:
+            await client.disconnect()
+            return
 
-    # 5. Wait for duration (e.g. stream length or test period)
-    await asyncio.sleep(duration)
+        # 5. Wait for duration (e.g. stream length or test period)
+        await asyncio.sleep(duration)
 
-    # 6. Attempt to discard group call
-    await discard_group_call(input_peer, entity)
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt received. Cleaning up...")
+    finally:
+       # 6. Attempt to discard group call
+       await discard_group_call(input_peer, entity)
 
-    # 7. Disconnect Telethon
-    await client.disconnect()
-    print("Telethon client disconnected.")
+       # 7. Disconnect Telethon
+       await client.disconnect()
+       print("Telethon client disconnected.")
 
 if __name__ == '__main__':
     asyncio.run(main())
